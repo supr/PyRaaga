@@ -1,7 +1,9 @@
 import re
 import os
+from lxml import etree
 from HTTPOpener import HTTPOpener
-from metadata import Track
+from metadata.Track import Track
+from metadata.Movie import Movie
 
 class Raaga(object):
     def __init__(self, opener=None, lang="telugu"):
@@ -14,17 +16,33 @@ class Raaga(object):
         rx = "\"sAI\(this, \'(.*?)\'\);\""
         return [ id.strip() for id in re.findall(rx,movie_list)]
 
-    def _get_movie_track_title(self, page):
-        rx_track_list = "class=\"contentSubHead\" title=\"(.*?)\""
-        return [ title.strip() for title in re.findall(rx_track_list, page) ]
-                 
-    def get_movie_info(self, movie_id):
-        URL = "http://www.raaga.com/channels/%s/moviedetail.asp?mid=%s"%(self.lang, movie_id)
-        movie_detail = self.opener.open(URL).read()
-        return self._get_movie_track_title(movie_detail)   
+    def _parse_artists(self, desc):
+        rx = "<p><\/p><p>Artist\(s\): (.*?)<br\/>Music: (.*?)<br\/><\/p>"
+        m = re.search(rx, desc)
+        artists, music_director = m.groups()
+        artists = [ a.strip() for a in artists.split(",") ]
+        music_director = [ m.strip() for m in music_director.split(",")]
+        return [artists, music_director]
 
-if __name__ == "__main__":
-    os.path.join(os.path.abspath(os.path.dirname(__file__)))
-    raaga = Raaga()
-    movie_ids = raaga.get_movie_ids()
-    print "Total Movie IDs fetched: ", len(movie_ids)
+    def _parse_movie_title(self, titlestr):
+        rx = "Raaga.com - (.*) Telugu songs"
+        m = re.search(rx, titlestr)
+        return m.group(1)
+
+    def get_movie_info(self, movie_id):
+        URL = "http://www.raaga.com/a/rss.asp?%s"%(movie_id)
+        rss = "".join([ line.strip() for line in self.opener.open(URL).readlines() ])
+        
+        mi_tree = etree.fromstring(rss)
+        mi_title = self._parse_movie_title(mi_tree.xpath("/rss/channel/title/text()")[0])
+        mi_tracks = mi_tree.xpath("/rss/channel/item")
+        tracks = []
+        for mi_track in mi_tracks:
+            track_title = mi_track.xpath("title/text()")[0]
+            track_desc = mi_track.xpath("description/text()")[0]
+            track_info = self._parse_artists(track_desc)
+            track = Track(track_title)
+            track.set_artists(track_info[0])
+            track.set_music(track_info[1])
+            tracks.append(track)
+        return Movie(mi_title, tracks)
