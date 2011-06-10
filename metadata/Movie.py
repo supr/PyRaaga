@@ -14,7 +14,6 @@ class Movie(object):
 
     def __eq__(self, other):
         if(isinstance(other, Movie)):
-            "Matching names",self.name == other.name,"Matching Tracks", self.tracks == other.tracks
             return ((self.name == other.name) and (self.tracks == other.tracks))
         else:
             return False
