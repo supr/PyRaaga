@@ -14,14 +14,6 @@ class Track(object):
     def set_music(self, music=None):
         self.music = music
 
-    def __dict__(self):
-        return dict(
-            Title = self.title,
-            Artists = self.artists,
-            Lyricist = self.lyricist,
-            Music = self.music,
-            )
-
     def __str__(self):
         return self.title
 
