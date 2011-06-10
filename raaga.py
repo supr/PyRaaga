@@ -45,4 +45,4 @@ class Raaga(object):
             track.set_artists(track_info[0])
             track.set_music(track_info[1])
             tracks.append(track)
-        return Movie(mi_title, tracks)
+        return Movie(mi_title, tracks, movie_id)
