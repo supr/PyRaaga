@@ -3,3 +3,14 @@ PyRaaga README
 Raaga.com Screen-Scraper to Extract Metadata Information for Indic Songs.
 
 The Project is still a Work-In-Progress
+
+SETUP
+
+This is how i'd setup a dev-env for this project
+
+prudhvi$ virtualenv --distribute pyenv
+prudhvi$ source pyenv/bin/activiate
+(pyenv)prudhvi$ pip install lxml
+
+And you can run tests from within your pyenv, not messing with your system
+python libs.
